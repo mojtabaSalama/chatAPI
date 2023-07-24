@@ -19,11 +19,22 @@ db.models = {};
 
 //require the objects
 let user = require("./User")(sequelize, Sequelize.DataTypes);
+let message = require("./message")(sequelize, Sequelize.DataTypes);
+let room = require("./room")(sequelize, Sequelize.DataTypes);
+let room_member = require("./room_member")(sequelize, Sequelize.DataTypes);
+
 // //sql relationship here -------------------------------
+user.hasMany(message);
+room_member.belongsTo(user);
+room_member.belongsTo(room);
+room.hasMany(message);
 
 // //-----------------------------------------------------
 
 // //add to db models
 db.models.user = user;
+db.models.room = room;
+db.models.message = message;
+db.models.room_member = room_member;
 
 module.exports = db;
