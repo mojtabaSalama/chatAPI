@@ -12,10 +12,10 @@ require("dotenv").config();
 const user = {
   register: async (req, res) => {
     try {
-      let { name, userName, email, password } = req.body;
+      let { name, email, password } = req.body;
 
       //check req.body
-      if (!(name && userName && password && email)) {
+      if (!(name && password && email)) {
         return res.status(400).json({ msg: " please enter all fields" });
       }
 
@@ -26,7 +26,7 @@ const user = {
       //-------------------------------------
 
       //filter list
-      let data = [name, userName, email, password];
+      let data = [name, email, password];
       //filtered data
       data.map((data) => {
         data = xssFilter.inHTMLData(data);
@@ -37,8 +37,8 @@ const user = {
       if (user) return res.status(403).json("email already exist");
 
       //make sure no userName is replicated
-      let Username = await User.findOne({ where: { userName } });
-      if (Username)
+      let checkUser = await User.findOne({ where: { email } });
+      if (checkUser)
         return res.status(403).json("user name is used try different one ");
 
       //hash user password
@@ -48,7 +48,7 @@ const user = {
       //save to database
       const newUser = await User.create({
         name,
-        userName,
+
         email,
 
         password: hashedPassword,
@@ -58,7 +58,7 @@ const user = {
       res.json({
         user: {
           id: newUser.id,
-          userName: newUser.userName,
+
           email: newUser.email,
           name: newUser.name,
         },
@@ -69,21 +69,21 @@ const user = {
   },
   login: async (req, res) => {
     try {
-      let { userName, password } = req.body;
+      let { email, password } = req.body;
       // check fields
-      if (!userName || !password) {
+      if (!email || !password) {
         return res.status(400).json({ msg: "please enter all feilds" });
       }
 
       //filter list
-      let data = [userName, password];
+      let data = [email, password];
       //filtered data
       data.map((data) => {
         data = xssFilter.inHTMLData(data);
       });
 
       // be sure the user is exist
-      User.findOne({ where: { userName } }).then((user) => {
+      User.findOne({ where: { email } }).then((user) => {
         if (!user) {
           return res.status(400).json({ msg: "user not found !" });
         }
@@ -93,14 +93,14 @@ const user = {
             return res.status(400).json({ msg: "password is incorrect" });
           } else {
             //sign user
-            let token = await jwt.sign({ id: user.id }, process.env.JWTSECRET);
+            let token = jwt.sign({ id: user.id }, process.env.JWTSECRET);
 
             //send response
             res.json({
               token,
               user: {
                 id: user.id,
-                userName: user.userName,
+
                 email: user.email,
                 name: user.name,
               },
@@ -127,20 +127,18 @@ const user = {
     if (!user) return res.status(400).json({ msg: "wrong id" });
 
     await res.json({
-      admin: {
-        id: user.id,
-        userName: user.userName,
-        email: user.email,
-        name: user.name,
-        profilePicture: user.profilePic,
-      },
+      id: user.id,
+
+      email: user.email,
+      name: user.name,
+      profilePicture: user.profilePic,
     });
   },
   update: async (req, res) => {
     try {
-      const { name, password, email, userName, id } = req.body;
+      const { name, password, email, id } = req.body;
       // check
-      if (!(name && password && email && userName && id))
+      if (!(name && password && email && id))
         return res.status(400).json("enter all feilds");
 
       let user = await User.findOne({ where: { id } });
@@ -156,7 +154,7 @@ const user = {
 
       //update User
       let status = await User.update(
-        { name, password: hashedPassword, email, userName },
+        { name, password: hashedPassword, email },
         { where: { id } }
       );
       res.send(`updated user successfully ${status}`);
