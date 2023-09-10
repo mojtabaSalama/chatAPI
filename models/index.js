@@ -24,8 +24,12 @@ let room = require("./room")(sequelize, Sequelize.DataTypes);
 let room_member = require("./room_member")(sequelize, Sequelize.DataTypes);
 
 // //sql relationship here -------------------------------
-user.hasMany(message);
+user.hasMany(message, {
+  foreignKey: "sender",
+});
+user.hasMany(message, { foreignKey: "receiver" });
 room_member.belongsTo(user);
+
 room_member.belongsTo(room);
 room.hasMany(message);
 

@@ -9,3 +9,5 @@ router.post("/create", validUser, room.createRoom);
 router.post("/join", validUser, room.joinRoom);
 router.post("/info", validUser, room.roomInfo);
 router.post("/leave", validUser, room.leaveRoom);
+
+module.exports = router;

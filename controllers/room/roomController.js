@@ -67,11 +67,10 @@ const room = {
   },
   roomInfo: async (req, res) => {
     try {
-      let { room_name } = req.body;
+      let { room_id } = req.body;
 
       //check user is existed
-      if (!room_name)
-        res.status(400).json({ msg: "enter the room name please  " });
+      if (!room_id) res.status(400).json({ msg: "enter the room id please  " });
 
       //check the if the user is autherized
       let user = await req.app.locals.user;
