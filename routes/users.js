@@ -20,17 +20,16 @@ router.post("/register", user.register);
 
 router.post("/login", user.login);
 
-router.post("/update", validUser, user.update);
+router.post("/updateName", validUser, user.updateName);
+router.post("/updatePassword", validUser, user.updatePassword);
 
-router.post(
-  "/update-image",
-  validUser,
-  upload.single("file"),
-  user.updateImage
-);
+router.post("/updateImage", validUser, upload.single("file"), user.updateImage);
 
-router.post("/get-user", validUser, user.getbyid);
-router.post("/remove_user", validUser, user.remove_user);
+router.post("/get", validUser, user.getbyid);
+router.get("/getbyToken", validUser, user.getbyToken);
+router.get("/remove", validUser, user.remove_user);
+router.get("/all", validUser, user.allUsers);
+router.get("/:image", user.getImage);
 
 //---------------------------
 

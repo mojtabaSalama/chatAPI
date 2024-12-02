@@ -16,4 +16,19 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 //routes -------------------
+router.post(
+  "/sendToUser",
+  validUser,
+  upload.single("file"),
+  message.sendMessageUser
+);
+router.post(
+  "/sendToRoom",
+  validUser,
+  upload.single("file"),
+  message.sendMessageRoom
+);
+router.post("/AllMessagesUser", validUser, message.getAllMessagesUser);
+router.post("/AllMessagesRoom", validUser, message.getAllMessagesRoom);
+
 module.exports = router;

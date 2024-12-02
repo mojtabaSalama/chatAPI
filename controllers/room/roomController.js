@@ -9,7 +9,7 @@ const room = {
     try {
       let { room_name } = req.body;
 
-      //check user is existed
+      //check field is not empty
       if (!room_name)
         res.status(400).json({ msg: "enter the room name please  " });
 
@@ -17,25 +17,30 @@ const room = {
       let user = await req.app.locals.user;
       if (!user) {
         res.status(400).json({ msg: "unautherized " });
+      } else {
+        const room = await Room.create({
+          name: room_name,
+        });
+
+        const room_member = await Room_member.create({
+          roomId: room.id,
+          userId: user.id,
+        });
+        res
+          .status(200)
+          .json({ msg: "Room is created , you can send messages to room " });
       }
-
-      const room = await Room.create({
-        name: room_name,
-      });
-
-      const room_member = await Room_member.create({
-        roomId: room.id,
-        userId: user.id,
-      });
-      res.status(200).json({ msg: "you can send messages to room " });
     } catch (error) {}
   },
   joinRoom: async (req, res) => {
     try {
-      let { room_id } = req.body;
+      let { room_name } = req.body;
 
       //check user is existed
-      if (!room_id) res.status(400).json({ msg: "enter room id please  " });
+      if (!room_name)
+        res
+          .status(400)
+          .json({ msg: " the room is not existed , enter room name please  " });
 
       //check the if the user is autherized
       let user = await req.app.locals.user;
@@ -44,11 +49,11 @@ const room = {
       }
 
       //check if room is existed
-      let room = await Room.findOne({ where: { id: room_id } });
+      let room = await Room.findOne({ where: { name: room_name } });
       if (!room) return res.status(400).json("wrong room id");
 
       let room_member = await Room_member.findOne({
-        where: { roomId: room_id },
+        where: { roomId: room.id },
       });
       if (room_member) {
         res.status(400).json({ msg: "you are alreadey room member !  " });
@@ -93,6 +98,38 @@ const room = {
     } catch (error) {}
   },
 
+  allRooms: async (req, res) => {
+    try {
+      let user = await req.app.locals.user;
+      if (!user) {
+        return res.status(400).json({ msg: "unauthorized" });
+      }
+
+      const are_room_member = await Room_member.findAll({
+        where: {
+          userId: user.id,
+        },
+        attributes: ["roomId"],
+      });
+      const roomIds = are_room_member.map(
+        (is_room_member) => is_room_member.roomId
+      );
+
+      const rooms = await Promise.all(
+        roomIds.map(async (roomId) => {
+          return await Room.findOne({ where: { id: roomId } });
+        })
+      );
+
+      res.json({ rooms: rooms });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ error: "An error occurred while retrieving rooms." });
+    }
+  },
+
   leaveRoom: async (req, res) => {
     try {
       let { room_id } = req.body;
@@ -110,7 +147,7 @@ const room = {
       Room_member.destroy({ where: { userId: user.id } });
 
       //delete empty room
-      const check_room_member = room_member.findAll({
+      const check_room_member = Room_member.findAll({
         where: { userId: user.id },
       });
       if (!check_room_member) Room.destroy({ where: { id: room_id } });

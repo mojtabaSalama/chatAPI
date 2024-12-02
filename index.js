@@ -3,8 +3,11 @@ const http = require("http");
 const app = express();
 const server = http.createServer(app);
 const cors = require("cors");
+const WebSocket = require("ws");
+const { initWebSocket } = require("./socketServer");
 
 const db = require("./models/index");
+const User = db.models.user;
 
 require("dotenv").config();
 
@@ -24,9 +27,10 @@ app.use(cors());
 app.use(express.static("public"));
 
 //setting up routes
-app.use("/user", require("./routes/users"));
-app.use("/room", require("./routes/rooms"));
-app.use("/message", require("./routes/messages"));
+app.use("/api/user", require("./routes/users"));
+app.use("/api/room", require("./routes/rooms"));
+app.use("/api/message", require("./routes/messages"));
 
 const Port = process.env.PORT || 8000;
 app.listen(Port, () => console.log(`server running on port ${Port}`));
+initWebSocket();
